@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOAI — The Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Heebo:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f0e8;--surface:#faf7f2;--s2:#ede8db;--s3:#e3ddd0;
+  --border:rgba(40,25,10,.09);--border2:rgba(40,25,10,.16);
+  --text:#1a1208;--muted:#6b5e4a;--dim:#b8ad9e;
+  --ink:#1a1208;--cream:#faf7f2;
+  --gold:#8b5c34;--gold2:#6b4220;--gold-bg:rgba(139,92,52,.09);
+  --teal:#3a7a60;--teal-bg:rgba(58,122,96,.09);
+  --rust:#8a3a2a;--rust-bg:rgba(138,58,42,.09);
+  --amber:#9a6a20;--amber-bg:rgba(154,106,32,.09);
+  --blue:#3a5a8a;--blue-bg:rgba(58,90,138,.09);
+  --r:3px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;font-size:14px;line-height:1.7;min-height:100vh}
+.serif{font-family:'Cormorant Garamond',serif}
+.mono{font-family:'DM Mono',monospace}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block}
+
+/* ══════════════════════════════
+   MEMBER INTAKE FORM
+══════════════════════════════ */
+.intake-wrap{min-height:100vh;display:flex}
+.intake-left{width:300px;flex-shrink:0;background:var(--ink);padding:2.5rem 2rem;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+@media(max-width:660px){.intake-left{display:none}}
+.brand-lg{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--cream);letter-spacing:.1em;line-height:1}
+.brand-sm{font-size:9px;letter-spacing:.16em;color:rgba(250,247,242,.28);text-transform:uppercase;margin-top:5px;margin-bottom:2.5rem}
+.left-quote{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:rgba(250,247,242,.5);line-height:1.65;margin-bottom:2rem}
+.left-quote cite{font-size:10px;font-style:normal;color:rgba(250,247,242,.25);letter-spacing:.1em;text-transform:uppercase;display:block;margin-top:.5rem}
+.step-nav{display:flex;flex-direction:column;gap:8px;flex:1}
+.sn-row{display:flex;align-items:center;gap:10px;opacity:.28;transition:opacity .25s}
+.sn-row.done{opacity:.55}
+.sn-row.current{opacity:1}
+.sn-dot{width:5px;height:5px;border-radius:50%;background:rgba(250,247,242,.35);flex-shrink:0;transition:all .25s}
+.sn-row.done .sn-dot{background:var(--gold)}
+.sn-row.current .sn-dot{background:var(--cream);width:7px;height:7px}
+.sn-label{font-size:10px;color:rgba(250,247,242,.55);letter-spacing:.05em}
+.left-foot{font-size:9px;color:rgba(250,247,242,.18);letter-spacing:.07em;line-height:1.9;margin-top:auto}
+
+.intake-right{flex:1;padding:3rem 3rem;max-width:620px}
+@media(max-width:660px){.intake-right{padding:1.5rem}}
+.prog-line{height:1px;background:var(--border2);margin-bottom:3rem;position:relative}
+.prog-fill{position:absolute;top:0;right:0;height:1px;background:var(--gold);transition:width .4s}
+
+.step{display:none}
+.step.active{display:block;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.step-ey{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-family:'DM Mono',monospace;margin-bottom:.6rem}
+.step-h{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,4vw,40px);font-weight:400;line-height:1.15;margin-bottom:.5rem}
+.step-s{font-size:13px;color:var(--muted);margin-bottom:2.2rem;line-height:1.75;max-width:400px}
+
+/* fields */
+.field{margin-bottom:1.5rem}
+.field>label{display:block;font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--muted);margin-bottom:.45rem;text-transform:uppercase}
+input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:11px 14px;color:var(--text);font-family:'Heebo',sans-serif;font-size:14px;outline:none;transition:border-color .2s;direction:rtl;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:72px}
+select option{background:var(--surface)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* pills */
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px}
+.pill input{display:none}
+.pill label{display:inline-block;padding:7px 16px;border:1px solid var(--border2);border-radius:40px;font-size:13px;cursor:pointer;transition:all .18s;color:var(--muted);background:var(--surface)}
+.pill input:checked+label{background:var(--gold);border-color:var(--gold);color:#fff}
+.pill label:hover{border-color:var(--gold);color:var(--gold)}
+
+/* checks */
+.checks{display:flex;flex-direction:column;gap:6px;margin-top:5px}
+.chk input{display:none}
+.chk label{display:flex;align-items:center;gap:11px;padding:9px 13px;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--muted);background:var(--surface);transition:all .18s}
+.chk label::before{content:'';width:13px;height:13px;border:1px solid var(--border2);border-radius:2px;flex-shrink:0;transition:all .18s}
+.chk input:checked+label{border-color:var(--gold);background:var(--gold-bg);color:var(--text)}
+.chk input:checked+label::before{background:var(--gold);border-color:var(--gold)}
+
+/* scale */
+.scale{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.sc input{display:none}
+.sc label{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;cursor:pointer;color:var(--muted);background:var(--surface);transition:all .18s}
+.sc input:checked+label{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:500}
+.scale-ends{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:.03em}
+
+/* nav */
+.fnav{display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.btn{padding:11px 26px;border-radius:var(--r);font-family:'Heebo',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .18s;letter-spacing:.04em}
+.btn-back{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.btn-back:hover{border-color:var(--gold);color:var(--gold)}
+.btn-next{background:var(--ink);color:var(--cream)}
+.btn-next:hover{background:var(--gold)}
+.btn-submit{background:var(--ink);color:var(--cream);width:100%;padding:14px;font-size:14px;letter-spacing:.06em}
+.btn-submit:hover{background:var(--gold)}
+.step-ctr{font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;letter-spacing:.06em}
+
+/* ══════════════════════════════
+   THANK YOU
+══════════════════════════════ */
+.ty-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.ty-inner{text-align:center;max-width:420px;padding:2rem}
+.ty-line{width:36px;height:1px;background:var(--gold);margin:0 auto 2rem}
+.ty-inner h2{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:400;margin-bottom:.8rem}
+.ty-inner p{font-size:13px;color:var(--muted);line-height:1.85}
+.ty-quote{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--dim);margin-top:2rem;line-height:1.6}
+
+/* ══════════════════════════════
+   DASHBOARD
+══════════════════════════════ */
+.dash{background:var(--bg);min-height:100vh}
+.dash-nav{display:flex;align-items:center;justify-content:space-between;padding:.85rem 2rem;background:var(--surface);border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:20}
+.dash-logo{font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:.08em}
+.dash-logo span{color:var(--gold)}
+.dash-tabs{display:flex;gap:3px}
+.dtab{padding:6px 14px;border-radius:var(--r);font-size:12px;cursor:pointer;color:var(--muted);background:transparent;border:none;font-family:'Heebo',sans-serif;transition:all .18s;letter-spacing:.03em}
+.dtab:hover{color:var(--text)}
+.dtab.on{background:var(--s2);color:var(--text)}
+.btn-sm{background:var(--ink);color:var(--cream);padding:7px 14px;border-radius:var(--r);font-family:'Heebo',sans-serif;font-size:11px;cursor:pointer;border:none;letter-spacing:.05em}
+.btn-sm:hover{background:var(--gold)}
+
+.dash-body{padding:2rem;max-width:1100px;margin:0 auto}
+.dash-panel{display:none}
+.dash-panel.on{display:block}
+
+/* member table */
+.table-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.2rem}
+.table-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400}
+.table-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+.mem-table{width:100%;border-collapse:collapse;font-size:13px}
+.mem-table th{text-align:right;padding:9px 12px;border-bottom:2px solid var(--border2);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:400;font-family:'DM Mono',monospace}
+.mem-table td{padding:12px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.mem-table tr:hover td{background:var(--surface);cursor:pointer}
+.score-ring{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;border:1.5px solid}
+.sr-hi{color:var(--teal);border-color:var(--teal);background:var(--teal-bg)}
+.sr-md{color:var(--amber);border-color:var(--amber);background:var(--amber-bg)}
+.sr-lo{color:var(--rust);border-color:var(--rust);background:var(--rust-bg)}
+.proto-badge{display:inline-block;font-size:10px;padding:2px 9px;border-radius:2px;border:1px solid;font-family:'DM Mono',monospace;letter-spacing:.04em}
+.pb-cardio{color:var(--teal);border-color:rgba(58,122,96,.25);background:var(--teal-bg)}
+.pb-strength{color:var(--gold2);border-color:rgba(139,92,52,.3);background:var(--gold-bg)}
+.pb-recovery{color:var(--rust);border-color:rgba(138,58,42,.25);background:var(--rust-bg)}
+.pb-neuro{color:var(--blue);border-color:rgba(58,90,138,.25);background:var(--blue-bg)}
+.pb-balanced{color:var(--muted);border-color:var(--border2);background:var(--s2)}
+.flag-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px}
+.fd-red{background:var(--rust)}
+.fd-amber{background:var(--amber)}
+.fd-ok{background:var(--teal)}
+.approval-badge{font-size:10px;padding:2px 8px;border-radius:2px;font-family:'DM Mono',monospace;border:1px solid}
+.ab-pending{color:var(--amber);border-color:rgba(154,106,32,.3);background:var(--amber-bg)}
+.ab-approved{color:var(--teal);border-color:rgba(58,122,96,.3);background:var(--teal-bg)}
+.empty-s{text-align:center;padding:3.5rem;color:var(--muted);font-size:13px}
+
+/* member profile */
+.prof-back{background:transparent;border:none;font-family:'Heebo',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:1.5rem;padding:0;letter-spacing:.03em}
+.prof-back:hover{color:var(--gold)}
+.prof-top{display:grid;grid-template-columns:1fr auto;gap:1.5rem;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border2)}
+.prof-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;margin-bottom:3px}
+.prof-meta{font-size:12px;color:var(--muted);line-height:1.8}
+.score-big{text-align:center}
+.sb-ring{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;border:2px solid;margin:0 auto 5px}
+.sbr-hi{color:var(--teal);border-color:var(--teal);background:var(--teal-bg)}
+.sbr-md{color:var(--amber);border-color:var(--amber);background:var(--amber-bg)}
+.sbr-lo{color:var(--rust);border-color:var(--rust);background:var(--rust-bg)}
+.sb-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace}
+
+/* dim cards */
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;margin-bottom:1.2rem}
+.dim-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.dc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.dc-name{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace}
+.dc-val{font-family:'Cormorant Garamond',serif;font-size:18px}
+.dc-bar-bg{background:var(--s2);height:3px;border-radius:2px;margin-bottom:8px}
+.dc-bar{height:3px;border-radius:2px}
+.dc-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:11px}
+.dc-row:last-child{border:none}
+.dc-row span:first-child{color:var(--muted)}
+
+/* AI summary + approval */
+.ai-card{background:var(--ink);color:var(--cream);border-radius:var(--r);padding:18px 20px;margin-bottom:12px}
+.ai-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(250,247,242,.3);font-family:'DM Mono',monospace;margin-bottom:8px}
+.ai-text{font-size:13px;color:rgba(250,247,242,.75);line-height:1.75}
+.ai-proto{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--cream);margin-bottom:6px}
+.approval-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.appr-btn{padding:8px 16px;border-radius:var(--r);font-family:'Heebo',sans-serif;font-size:12px;cursor:pointer;border:1px solid;transition:all .18s;letter-spacing:.04em}
+.appr-md{background:var(--teal-bg);color:var(--teal);border-color:rgba(58,122,96,.3)}
+.appr-md:hover{background:var(--teal);color:#fff}
+.appr-nut{background:var(--amber-bg);color:var(--amber);border-color:rgba(154,106,32,.3)}
+.appr-nut:hover{background:var(--amber);color:#fff}
+.appr-coach{background:var(--blue-bg);color:var(--blue);border-color:rgba(58,90,138,.3)}
+.appr-coach:hover{background:var(--blue);color:#fff}
+.approved-chip{font-size:10px;padding:4px 10px;border-radius:2px;background:var(--teal-bg);color:var(--teal);border:1px solid rgba(58,122,96,.3);font-family:'DM Mono',monospace}
+
+/* flags */
+.sec-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
+.sc-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:11px}
+.flag-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.flag-row:last-child{border:none}
+.fr-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.frd-red{background:var(--rust)}
+.frd-amber{background:var(--amber)}
+.fr-title{font-size:12px;font-weight:500;margin-bottom:1px}
+.fr-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* blood panel */
+.blood-list{margin:8px 0}
+.blood-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.blood-item:last-child{border:none}
+.blood-name{font-weight:500}
+.blood-where{font-size:11px;color:var(--muted)}
+.blood-why{font-size:10px;color:var(--dim);font-family:'DM Mono',monospace}
+
+/* community panel */
+.group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:1.5rem}
+.group-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.gc-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;margin-bottom:4px}
+.gc-meta{font-size:11px;color:var(--muted);margin-bottom:10px}
+.gc-members{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.gc-mem{font-size:11px;padding:2px 8px;background:var(--s2);border-radius:2px;color:var(--muted)}
+.gc-proto{font-size:11px;font-family:'DM Mono',monospace;color:var(--gold2);background:var(--gold-bg);padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:8px}
+.schedule-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.sched-item{background:var(--s2);border-radius:var(--r);padding:10px 12px}
+.si-day{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace}
+.si-title{font-size:12px;font-weight:500;margin-bottom:1px}
+.si-type{font-size:10px;color:var(--muted)}
+.si-badge{display:inline-block;font-size:9px;padding:1px 7px;border-radius:2px;margin-top:4px;font-family:'DM Mono',monospace}
+.sib-group{background:var(--teal-bg);color:var(--teal)}
+.sib-personal{background:var(--gold-bg);color:var(--gold2)}
+
+/* ── utils ── */
+.hlbox{border-right:3px solid var(--gold);background:var(--gold-bg);padding:11px 14px;border-radius:0 3px 3px 0;margin:10px 0}
+.hlbox p{font-size:12px;color:var(--gold2);line-height:1.7}
+.divider{height:1px;background:var(--border2);margin:1.5rem 0}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ INTAKE FORM ════════════════ -->
+<div class="view active" id="vForm">
+<div class="intake-wrap">
+  <div class="intake-left">
+    <div class="brand-lg">MOAI</div>
+    <div class="brand-sm">The Club · שאלון קבלה</div>
+    <div class="left-quote">"קבוצה של חברים לכל החיים — תמיכה חברתית, בריאותית, ורוחנית."<cite>אוקינאווה, יפן</cite></div>
+    <div class="step-nav" id="stepNav">
+      <div class="sn-row current" data-s="1"><div class="sn-dot"></div><span class="sn-label">פרטים אישיים</span></div>
+      <div class="sn-row" data-s="2"><div class="sn-dot"></div><span class="sn-label">רקע רפואי</span></div>
+      <div class="sn-row" data-s="3"><div class="sn-dot"></div><span class="sn-label">פעילות גופנית</span></div>
+      <div class="sn-row" data-s="4"><div class="sn-dot"></div><span class="sn-label">שינה</span></div>
+      <div class="sn-row" data-s="5"><div class="sn-dot"></div><span class="sn-label">סטרס ומנטל</span></div>
+      <div class="sn-row" data-s="6"><div class="sn-dot"></div><span class="sn-label">תזונה</span></div>
+      <div class="sn-row" data-s="7"><div class="sn-dot"></div><span class="sn-label">מטרות</span></div>
+    </div>
+    <div class="left-foot">MOAI · THE CLUB<br>כל המידע מועבר לצוות בלבד<br>ומשמש לבניית הפרוטוקול האישי</div>
+  </div>
+
+  <div class="intake-right">
+    <div class="prog-line"><div class="prog-fill" id="pFill" style="width:14%"></div></div>
+
+    <!-- S1 -->
+    <div class="step active" id="s1">
+      <div class="step-ey">01 / 07</div>
+      <div class="step-h">נתחיל<br>מהבסיס</div>
+      <div class="step-s">פרטים אישיים — הבסיס לפרוטוקול שלך</div>
+      <div class="row2">
+        <div class="field"><label>שם פרטי</label><input id="f_first" type="text" placeholder="שם פרטי"></div>
+        <div class="field"><label>שם משפחה</label><input id="f_last" type="text" placeholder="שם משפחה"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>גיל</label><input id="f_age" type="number" min="18" max="80" placeholder="34"></div>
+        <div class="field"><label>מין ביולוגי</label>
+          <select id="f_sex"><option value="">בחר/י</option><option value="male">זכר</option><option value="female">נקבה</option></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>גובה (ס"מ)</label><input id="f_height" type="number" placeholder="175"></div>
+        <div class="field"><label>משקל (ק"ג)</label><input id="f_weight" type="number" placeholder="72"></div>
+      </div>
+      <div class="field"><label>אימייל</label><input id="f_email" type="email" placeholder="your@email.com" dir="ltr"></div>
+      <div class="fnav"><span class="step-ctr">01 / 07</span><button class="btn btn-next" onclick="nxt(1)">המשך</button></div>
+    </div>
+
+    <!-- S2 -->
+    <div class="step" id="s2">
+      <div class="step-ey">02 / 07</div>
+      <div class="step-h">רקע<br>רפואי</div>
+      <div class="step-s">יועבר לצוות המקצועי בלבד</div>
+      <div class="field"><label>אבחנות רפואיות</label>
+        <div class="checks">
+          <div class="chk"><input type="checkbox" id="c1" value="diabetes"><label for="c1">סכרת / טרום סכרת</label></div>
+          <div class="chk"><input type="checkbox" id="c2" value="hypertension"><label for="c2">לחץ דם גבוה</label></div>
+          <div class="chk"><input type="checkbox" id="c3" value="heart"><label for="c3">מחלת לב</label></div>
+          <div class="chk"><input type="checkbox" id="c4" value="autoimmune"><label for="c4">מחלה אוטואימונית</label></div>
+          <div class="chk"><input type="checkbox" id="c5" value="chronic_pain"><label for="c5">כאב כרוני</label></div>
+          <div class="chk"><input type="checkbox" id="c6" value="none"><label for="c6">אין אבחנות</label></div>
+        </div>
+      </div>
+      <div class="field"><label>תרופות ותוספים</label><textarea id="f_meds" placeholder="פרט/י תרופות. אם אין — 'אין'."></textarea></div>
+      <div class="field"><label>פציעות / אזורים מוגבלים</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="inj" id="inj0" value="none"><label for="inj0">ללא</label></div>
+          <div class="pill"><input type="radio" name="inj" id="inj1" value="knee"><label for="inj1">ברכיים</label></div>
+          <div class="pill"><input type="radio" name="inj" id="inj2" value="back"><label for="inj2">גב</label></div>
+          <div class="pill"><input type="radio" name="inj" id="inj3" value="shoulder"><label for="inj3">כתפיים</label></div>
+          <div class="pill"><input type="radio" name="inj" id="inj4" value="multiple"><label for="inj4">מרובות</label></div>
+        </div>
+      </div>
+      <div class="fnav"><button class="btn btn-back" onclick="prv(2)">חזרה</button><span class="step-ctr">02 / 07</span><button class="btn btn-next" onclick="nxt(2)">המשך</button></div>
+    </div>
+
+    <!-- S3 -->
+    <div class="step" id="s3">
+      <div class="step-ey">03 / 07</div>
+      <div class="step-h">פעילות<br>גופנית</div>
+      <div class="step-s">נקודת הפתיחה לפרוטוקול</div>
+      <div class="field"><label>כמה פעמים בשבוע?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="freq" id="fr0" value="0"><label for="fr0">כלל לא</label></div>
+          <div class="pill"><input type="radio" name="freq" id="fr1" value="1"><label for="fr1">1–2×</label></div>
+          <div class="pill"><input type="radio" name="freq" id="fr2" value="3"><label for="fr2">3×</label></div>
+          <div class="pill"><input type="radio" name="freq" id="fr3" value="4"><label for="fr3">4–5×</label></div>
+          <div class="pill"><input type="radio" name="freq" id="fr4" value="6"><label for="fr4">6+×</label></div>
+        </div>
+      </div>
+      <div class="field"><label>סוג פעילות עיקרית</label>
+        <div class="checks">
+          <div class="chk"><input type="checkbox" id="at1" value="weights"><label for="at1">אימוני כוח</label></div>
+          <div class="chk"><input type="checkbox" id="at2" value="cardio"><label for="at2">ריצה / אופניים / שחייה</label></div>
+          <div class="chk"><input type="checkbox" id="at3" value="yoga"><label for="at3">יוגה / פילאטיס</label></div>
+          <div class="chk"><input type="checkbox" id="at4" value="classes"><label for="at4">שיעורים קבוצתיים</label></div>
+          <div class="chk"><input type="checkbox" id="at5" value="nothing"><label for="at5">לא מתאמן/ת</label></div>
+        </div>
+      </div>
+      <div class="field"><label>יכול/ה לרוץ 30 דקות ברציפות?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="run30" id="r1" value="yes"><label for="r1">כן</label></div>
+          <div class="pill"><input type="radio" name="run30" id="r2" value="maybe"><label for="r2">בקושי</label></div>
+          <div class="pill"><input type="radio" name="run30" id="r3" value="no"><label for="r3">לא</label></div>
+        </div>
+      </div>
+      <div class="fnav"><button class="btn btn-back" onclick="prv(3)">חזרה</button><span class="step-ctr">03 / 07</span><button class="btn btn-next" onclick="nxt(3)">המשך</button></div>
+    </div>
+
+    <!-- S4 -->
+    <div class="step" id="s4">
+      <div class="step-ey">04 / 07</div>
+      <div class="step-h">שינה</div>
+      <div class="step-s">שינה משפיעה על הכל — לפני כל פרוטוקול</div>
+      <div class="field"><label>שעות שינה ממוצעות</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="sleep" id="sl1" value="under5"><label for="sl1">&lt;5</label></div>
+          <div class="pill"><input type="radio" name="sleep" id="sl2" value="5to6"><label for="sl2">5–6</label></div>
+          <div class="pill"><input type="radio" name="sleep" id="sl3" value="6to7"><label for="sl3">6–7</label></div>
+          <div class="pill"><input type="radio" name="sleep" id="sl4" value="7to8"><label for="sl4">7–8</label></div>
+          <div class="pill"><input type="radio" name="sleep" id="sl5" value="over8"><label for="sl5">8+</label></div>
+        </div>
+      </div>
+      <div class="field"><label>איכות שינה (1–10)</label>
+        <div class="scale">
+          <div class="sc"><input type="radio" name="sleepq" id="sq1" value="1"><label for="sq1">1</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq2" value="2"><label for="sq2">2</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq3" value="3"><label for="sq3">3</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq4" value="4"><label for="sq4">4</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq5" value="5"><label for="sq5">5</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq6" value="6"><label for="sq6">6</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq7" value="7"><label for="sq7">7</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq8" value="8"><label for="sq8">8</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq9" value="9"><label for="sq9">9</label></div>
+          <div class="sc"><input type="radio" name="sleepq" id="sq10" value="10"><label for="sq10">10</label></div>
+        </div>
+        <div class="scale-ends"><span>גרוע</span><span>מעולה</span></div>
+      </div>
+      <div class="field"><label>מתעורר/ת עייף/ה?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="tired" id="t1" value="always"><label for="t1">כמעט תמיד</label></div>
+          <div class="pill"><input type="radio" name="tired" id="t2" value="often"><label for="t2">לעתים קרובות</label></div>
+          <div class="pill"><input type="radio" name="tired" id="t3" value="sometimes"><label for="t3">לפעמים</label></div>
+          <div class="pill"><input type="radio" name="tired" id="t4" value="rarely"><label for="t4">לעתים רחוקות</label></div>
+        </div>
+      </div>
+      <div class="fnav"><button class="btn btn-back" onclick="prv(4)">חזרה</button><span class="step-ctr">04 / 07</span><button class="btn btn-next" onclick="nxt(4)">המשך</button></div>
+    </div>
+
+    <!-- S5 -->
+    <div class="step" id="s5">
+      <div class="step-ey">05 / 07</div>
+      <div class="step-h">סטרס<br>ומנטל</div>
+      <div class="step-s">קורטיזול כרוני חוסם כל פרוטוקול אחר</div>
+      <div class="field"><label>רמת סטרס ממוצעת (1–10)</label>
+        <div class="scale">
+          <div class="sc"><input type="radio" name="stress" id="st1" value="1"><label for="st1">1</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st2" value="2"><label for="st2">2</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st3" value="3"><label for="st3">3</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st4" value="4"><label for="st4">4</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st5" value="5"><label for="st5">5</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st6" value="6"><label for="st6">6</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st7" value="7"><label for="st7">7</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st8" value="8"><label for="st8">8</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st9" value="9"><label for="st9">9</label></div>
+          <div class="sc"><input type="radio" name="stress" id="st10" value="10"><label for="st10">10</label></div>
+        </div>
+        <div class="scale-ends"><span>ללא</span><span>קיצוני</span></div>
+      </div>
+      <div class="field"><label>חווה באופן קבוע</label>
+        <div class="checks">
+          <div class="chk"><input type="checkbox" id="sy1" value="brain_fog"><label for="sy1">ערפל מוחי / קושי בריכוז</label></div>
+          <div class="chk"><input type="checkbox" id="sy2" value="anxiety"><label for="sy2">חרדה מתמשכת</label></div>
+          <div class="chk"><input type="checkbox" id="sy3" value="low_energy"><label for="sy3">אנרגיה נמוכה / חוסר מוטיבציה</label></div>
+          <div class="chk"><input type="checkbox" id="sy4" value="none"><label for="sy4">אין מהאמור</label></div>
+        </div>
+      </div>
+      <div class="field"><label>שגרת מיינדפולנס?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="mind" id="m1" value="daily"><label for="m1">יומי</label></div>
+          <div class="pill"><input type="radio" name="mind" id="m2" value="sometimes"><label for="m2">לפעמים</label></div>
+          <div class="pill"><input type="radio" name="mind" id="m3" value="no"><label for="m3">לא</label></div>
+          <div class="pill"><input type="radio" name="mind" id="m4" value="want"><label for="m4">רוצה להתחיל</label></div>
+        </div>
+      </div>
+      <div class="fnav"><button class="btn btn-back" onclick="prv(5)">חזרה</button><span class="step-ctr">05 / 07</span><button class="btn btn-next" onclick="nxt(5)">המשך</button></div>
+    </div>
+
+    <!-- S6 -->
+    <div class="step" id="s6">
+      <div class="step-ey">06 / 07</div>
+      <div class="step-h">תזונה</div>
+      <div class="step-s">בסיס לפרוטוקול — יועבר לתזונאי</div>
+      <div class="field"><label>צריכת חלבון יומית</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="protein" id="p1" value="low"><label for="p1">נמוכה (&lt;80g)</label></div>
+          <div class="pill"><input type="radio" name="protein" id="p2" value="mid"><label for="p2">בינונית (80–120g)</label></div>
+          <div class="pill"><input type="radio" name="protein" id="p3" value="high"><label for="p3">גבוהה (120g+)</label></div>
+          <div class="pill"><input type="radio" name="protein" id="p4" value="unknown"><label for="p4">לא יודע/ת</label></div>
+        </div>
+      </div>
+      <div class="field"><label>אלכוהול בשבוע</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="alcohol" id="a0" value="none"><label for="a0">לא שותה</label></div>
+          <div class="pill"><input type="radio" name="alcohol" id="a1" value="1to3"><label for="a1">1–3 כוסות</label></div>
+          <div class="pill"><input type="radio" name="alcohol" id="a2" value="4to7"><label for="a2">4–7</label></div>
+          <div class="pill"><input type="radio" name="alcohol" id="a3" value="over7"><label for="a3">7+</label></div>
+        </div>
+      </div>
+      <div class="field"><label>הערות (אלרגיות, העדפות)</label><textarea id="f_diet" placeholder="גלוטן, לקטוז, צמחוני..."></textarea></div>
+      <div class="fnav"><button class="btn btn-back" onclick="prv(6)">חזרה</button><span class="step-ctr">06 / 07</span><button class="btn btn-next" onclick="nxt(6)">המשך</button></div>
+    </div>
+
+    <!-- S7 -->
+    <div class="step" id="s7">
+      <div class="step-ey">07 / 07</div>
+      <div class="step-h">מטרות</div>
+      <div class="step-s">מה מביא אותך ל-MOAI</div>
+      <div class="field"><label>המטרה העיקרית שלך</label>
+        <div class="checks">
+          <div class="chk"><input type="checkbox" id="g1" value="longevity"><label for="g1">אריכות חיים ואיכות חיים</label></div>
+          <div class="chk"><input type="checkbox" id="g2" value="energy"><label for="g2">יותר אנרגיה ביומיום</label></div>
+          <div class="chk"><input type="checkbox" id="g3" value="body"><label for="g3">שיפור הרכב גוף</label></div>
+          <div class="chk"><input type="checkbox" id="g4" value="mental"><label for="g4">בריאות מנטלית</label></div>
+          <div class="chk"><input type="checkbox" id="g5" value="community"><label for="g5">שייכות לקהילה שמתקדמת יחד</label></div>
+          <div class="chk"><input type="checkbox" id="g6" value="performance"><label for="g6">ביצועים ספורטיביים</label></div>
+        </div>
+      </div>
+      <div class="field"><label>זמן זמין ביום לפרוטוקול</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="time" id="tm1" value="30"><label for="tm1">30 דק'</label></div>
+          <div class="pill"><input type="radio" name="time" id="tm2" value="60"><label for="tm2">60 דק'</label></div>
+          <div class="pill"><input type="radio" name="time" id="tm3" value="90"><label for="tm3">90 דק'</label></div>
+          <div class="pill"><input type="radio" name="time" id="tm4" value="120"><label for="tm4">2+ שעות</label></div>
+        </div>
+      </div>
+      <div class="field"><label>הערות נוספות</label><textarea id="f_notes" placeholder="כל מה שחשוב שנדע..."></textarea></div>
+      <div class="fnav" style="flex-direction:column;gap:10px">
+        <button class="btn btn-submit" onclick="submit()">שליחת השאלון</button>
+        <button class="btn btn-back" style="align-self:flex-start" onclick="prv(7)">חזרה</button>
+      </div>
+    </div>
+
+  </div><!-- intake-right -->
+</div><!-- intake-wrap -->
+</div><!-- vForm -->
+
+<!-- ════════════════ THANK YOU ════════════════ -->
+<div class="view" id="vTy">
+  <div class="ty-wrap">
+    <div class="ty-inner">
+      <div class="ty-line"></div>
+      <h2 class="serif">ברוך הבא<br>למואי</h2>
+      <p>השאלון התקבל.<br>הצוות יסקור את הנתונים ויישלח אליך<br>רשימת בדיקות מותאמת אישית בקרוב.</p>
+      <div class="ty-quote">"It's much easier to go through life<br>knowing there is a safety net."<br>— Okinawa, Japan</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div class="view" id="vDash">
+  <div class="dash">
+    <div class="dash-nav">
+      <div class="dash-logo">MOAI <span>·</span> The Club</div>
+      <div class="dash-tabs">
+        <button class="dtab on" onclick="dTab('members',this)">חברים</button>
+        <button class="dtab" onclick="dTab('blood',this)">בדיקות דם</button>
+        <button class="dtab" onclick="dTab('community',this)">קהילה</button>
+      </div>
+      <button class="btn-sm" onclick="goForm()">+ חבר חדש</button>
+    </div>
+
+    <div class="dash-body">
+
+      <!-- MEMBERS PANEL -->
+      <div class="dash-panel on" id="pMembers">
+        <div class="table-head">
+          <div class="table-title serif">חברי MOAI</div>
+          <div class="table-sub" id="membersCount">0 חברים</div>
+        </div>
+        <div class="empty-s" id="emptyMembers">
+          <div>עדיין אין חברים</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:var(--dim);margin-top:4px">שלח את השאלון לחברי הפיילוט</div>
+        </div>
+        <table class="mem-table" id="membersTable" style="display:none">
+          <thead><tr><th>שם</th><th>ציון</th><th>פרוטוקול</th><th>דגלים</th><th>אישור צוות</th><th>תאריך</th></tr></thead>
+          <tbody id="membersBody"></tbody>
+        </table>
+      </div>
+
+      <!-- BLOOD PANEL -->
+      <div class="dash-panel" id="pBlood">
+        <div class="table-head">
+          <div class="table-title serif">פנל בדיקות דם מומלץ</div>
+          <div class="table-sub">לשלוח לכל חבר לפני תחילת פרוטוקול</div>
+        </div>
+        <div class="hlbox"><p>הרשימה הזו נשלחת אוטומטית לחבר לאחר קבלת השאלון, עם המלצה היכן לבצע (מעבדה / רופא משפחה). תוצאות מועלות לדשבורד ומפורשות על ידי ה-AI לפני אישור הצוות.</p></div>
+        <div class="blood-list">
+          <div class="blood-item"><div><div class="blood-name">HbA1c</div><div class="blood-why">עמידות אינסולין — killer #1 ב-longevity</div></div><div class="blood-where">רופא משפחה / מעבדה</div></div>
+          <div class="blood-item"><div><div class="blood-name">Fasting Insulin</div><div class="blood-why">רגישות אינסולין, קריטי לאנרגיה</div></div><div class="blood-where">מעבדה (לא כלול בסל)</div></div>
+          <div class="blood-item"><div><div class="blood-name">Vitamin D (25-OH)</div><div class="blood-why">חסר ב-80% מהישראלים</div></div><div class="blood-where">רופא משפחה</div></div>
+          <div class="blood-item"><div><div class="blood-name">Ferritin</div><div class="blood-why">עייפות לא מוסברת, VO2max</div></div><div class="blood-where">רופא משפחה</div></div>
+          <div class="blood-item"><div><div class="blood-name">TSH + Free T4</div><div class="blood-why">תירואיד — מטאבוליזם כללי</div></div><div class="blood-where">רופא משפחה</div></div>
+          <div class="blood-item"><div><div class="blood-name">Apolipoprotein B</div><div class="blood-why">מדד לב-כלי דם מדויק יותר מ-LDL</div></div><div class="blood-where">מעבדה (לא כלול בסל)</div></div>
+          <div class="blood-item"><div><div class="blood-name">hsCRP</div><div class="blood-why">דלקת כרונית סיסטמית</div></div><div class="blood-where">רופא משפחה</div></div>
+          <div class="blood-item"><div><div class="blood-name">Testosterone (גברים) / Estradiol (נשים)</div><div class="blood-why">כוח, שריר, מצב רוח, שינה</div></div><div class="blood-where">רופא משפחה</div></div>
+          <div class="blood-item"><div><div class="blood-name">Magnesium (RBC)</div><div class="blood-why">חסר ב-50%+ — שינה, שריר, לחץ דם</div></div><div class="blood-where">מעבדה (לא כלול בסל)</div></div>
+          <div class="blood-item"><div><div class="blood-name">Homocysteine</div><div class="blood-why">לב ומוח, חסר B12/B6</div></div><div class="blood-where">מעבדה (לא כלול בסל)</div></div>
+          <div class="blood-item"><div><div class="blood-name">CBC + CMP</div><div class="blood-why">ספירת דם + כבד/כליות — baseline</div></div><div class="blood-where">רופא משפחה</div></div>
+          <div class="blood-item"><div><div class="blood-name">Vitamin B12</div><div class="blood-why">ערפל מוחי, עייפות, עצבים</div></div><div class="blood-where">רופא משפחה</div></div>
+        </div>
+      </div>
+
+      <!-- COMMUNITY PANEL -->
+      <div class="dash-panel" id="pCommunity">
+        <div class="table-head">
+          <div class="table-title serif">קבוצות MOAI</div>
+          <div class="table-sub">track אישי · layer קבוצתי</div>
+        </div>
+        <div class="hlbox"><p><strong>כלל הארכיטקטורה:</strong> כל חבר בפרוטוקול האישי שלו — אבל כולם חולקים אימונים קבוצתיים, הרצאות, ותכנים. הקבוצה היא ה-retention engine.</p></div>
+        <div class="group-grid" id="groupGrid">
+          <div class="group-card">
+            <div class="gc-name serif">MOAI Alpha</div>
+            <div class="gc-meta">קבוצה 1 · 5 חברים · שלב Foundation</div>
+            <div class="gc-proto">Foundation Cardio + כוח בסיסי</div>
+            <div class="gc-members" id="grp1members"><span class="gc-mem">ממתין לחברים...</span></div>
+          </div>
+          <div class="group-card">
+            <div class="gc-name serif">MOAI Beta</div>
+            <div class="gc-meta">קבוצה 2 · 5 חברים · שלב Build</div>
+            <div class="gc-proto">Polarized Cardio + Hypertrophy</div>
+            <div class="gc-members" id="grp2members"><span class="gc-mem">ממתין לחברים...</span></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:.75rem;letter-spacing:.03em">לוח שנה קבוצתי — שבוע טיפוסי</div>
+        <div class="schedule-grid">
+          <div class="sched-item">
+            <div class="si-day">ראשון</div>
+            <div class="si-title">Zone 2 + כוח פלג עליון</div>
+            <div class="si-type">60 דק' · The Club</div>
+            <span class="si-badge sib-group">קבוצתי</span>
+          </div>
+          <div class="sched-item">
+            <div class="si-day">שני</div>
+            <div class="si-title">Zone 2 / Recovery</div>
+            <div class="si-type">45 דק' · אישי</div>
+            <span class="si-badge sib-personal">אישי</span>
+          </div>
+          <div class="sched-item">
+            <div class="si-day">שלישי</div>
+            <div class="si-title">כוח פלג תחתון</div>
+            <div class="si-type">60 דק' · The Club</div>
+            <span class="si-badge sib-group">קבוצתי</span>
+          </div>
+          <div class="sched-item">
+            <div class="si-day">רביעי</div>
+            <div class="si-title">NSDR + Mobility</div>
+            <div class="si-type">30 דק' · אישי</div>
+            <span class="si-badge sib-personal">אישי</span>
+          </div>
+          <div class="sched-item">
+            <div class="si-day">חמישי</div>
+            <div class="si-title">VO2max Intervals</div>
+            <div class="si-type">45 דק' · The Club</div>
+            <span class="si-badge sib-group">קבוצתי</span>
+          </div>
+          <div class="sched-item">
+            <div class="si-day">שישי</div>
+            <div class="si-title">הרצאה / תוכן חודשי</div>
+            <div class="si-type">60 דק' · The Club</div>
+            <span class="si-badge sib-group">קבוצתי</span>
+          </div>
+          <div class="sched-item">
+            <div class="si-day">שבת</div>
+            <div class="si-title">מנוחה</div>
+            <div class="si-type">—</div>
+            <span class="si-badge sib-personal">אישי</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE VIEW -->
+      <div id="profileView" style="display:none">
+        <button class="prof-back" onclick="backToList()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15 18 9 12 15 6"/></svg>
+          חזרה לרשימה
+        </button>
+        <div id="profileContent"></div>
+      </div>
+
+    </div><!-- dash-body -->
+  </div><!-- dash -->
+</div><!-- vDash -->
+
+<!-- FLOATING CONTROLS -->
+<div style="position:fixed;bottom:18px;left:18px;display:flex;flex-direction:column;gap:7px;z-index:999">
+  <button onclick="showDash()" style="background:var(--ink);color:var(--cream);padding:8px 14px;border-radius:2px;font-size:11px;cursor:pointer;border:none;font-family:'Heebo',sans-serif;letter-spacing:.05em">דשבורד</button>
+  <button onclick="loadDemo();showDash()" style="background:var(--gold);color:#fff;padding:8px 14px;border-radius:2px;font-size:11px;cursor:pointer;border:none;font-family:'Heebo',sans-serif;letter-spacing:.05em">טען דמו</button>
+</div>
+
+<script>
+// ── STATE ──
+let cur=1; const TOTAL=7;
+let members=JSON.parse(localStorage.getItem('moai2_members')||'[]');
+
+// ── FORM NAV ──
+function nxt(n){go(n,n+1)}
+function prv(n){go(n,n-1)}
+function go(from,to){
+  document.getElementById('s'+from).classList.remove('active');
+  document.getElementById('s'+to).classList.add('active');
+  cur=to;
+  document.getElementById('pFill').style.width=(cur/TOTAL*100)+'%';
+  document.querySelectorAll('.sn-row').forEach(r=>{
+    const s=parseInt(r.dataset.s);
+    r.classList.remove('current','done');
+    if(s===cur)r.classList.add('current');
+    else if(s<cur)r.classList.add('done');
+  });
+}
+
+// ── COLLECT ──
+const rad=n=>{const e=document.querySelector(`input[name="${n}"]:checked`);return e?e.value:''};
+const cks=id=>[...document.querySelectorAll(`#${id} input:checked`)].map(e=>e.value);
+const chkAll=cls=>[...document.querySelectorAll(`.${cls} input:checked`)].map(e=>e.value);
+
+function collect(){
+  return{
+    id:Date.now(),date:new Date().toLocaleDateString('he-IL'),
+    first:document.getElementById('f_first').value,
+    last:document.getElementById('f_last').value,
+    age:parseInt(document.getElementById('f_age').value)||0,
+    sex:document.getElementById('f_sex').value,
+    height:parseInt(document.getElementById('f_height').value)||0,
+    weight:parseInt(document.getElementById('f_weight').value)||0,
+    email:document.getElementById('f_email').value,
+    conditions:[...document.querySelectorAll('#s2 .checks input:checked')].map(e=>e.value),
+    meds:document.getElementById('f_meds').value,
+    injuries:rad('inj'),
+    freq:parseInt(rad('freq'))||0,
+    acttype:[...document.querySelectorAll('#s3 .checks input:checked')].map(e=>e.value),
+    run30:rad('run30'),
+    sleep:rad('sleep'),sleepq:parseInt(rad('sleepq'))||5,
+    tired:rad('tired'),
+    stress:parseInt(rad('stress'))||5,
+    symptoms:[...document.querySelectorAll('#s5 .checks input:checked')].map(e=>e.value),
+    mind:rad('mind'),
+    protein:rad('protein'),alcohol:rad('alcohol'),
+    diet:document.getElementById('f_diet').value,
+    goals:[...document.querySelectorAll('#s7 .checks input:checked')].map(e=>e.value),
+    time:rad('time'),
+    notes:document.getElementById('f_notes').value,
+    approvals:{md:false,nutritionist:false,coach:false}
+  };
+}
+
+// ── SCORING ──
+function score(d){
+  let aerobic=5;
+  if(d.freq>=4)aerobic+=2;else if(d.freq===3)aerobic+=1;else if(d.freq===0)aerobic-=2;
+  if(d.acttype.includes('cardio'))aerobic+=1;
+  if(d.run30==='yes')aerobic+=2;else if(d.run30==='no')aerobic-=1;
+  aerobic=clamp(aerobic);
+
+  let strength=5;
+  if(d.acttype.includes('weights'))strength+=2;
+  if(d.freq>=3)strength+=1;
+  if(d.protein==='high')strength+=1;else if(d.protein==='low')strength-=1;
+  if(d.injuries&&d.injuries!=='none')strength-=1;
+  strength=clamp(strength);
+
+  let recovery=5;
+  recovery+=({under5:-3,'5to6':-2,'6to7':-1,'7to8':1,over8:2}[d.sleep]||0);
+  recovery+=(d.sleepq-5)*0.3;
+  if(d.tired==='always')recovery-=2;else if(d.tired==='often')recovery-=1;
+  if(d.alcohol==='over7')recovery-=2;else if(d.alcohol==='4to7')recovery-=1;
+  recovery=clamp(Math.round(recovery*10)/10);
+
+  let mind=5;
+  if(d.mind==='daily')mind+=3;else if(d.mind==='sometimes')mind+=1;else if(d.mind==='no')mind-=1;
+  if(d.stress>=8)mind-=2;else if(d.stress>=6)mind-=1;else if(d.stress<=3)mind+=1;
+  if(d.symptoms.includes('brain_fog'))mind-=1;
+  if(d.symptoms.includes('anxiety'))mind-=1;
+  mind=clamp(Math.round(mind*10)/10);
+
+  let nutrition=5;
+  if(d.protein==='high')nutrition+=2;else if(d.protein==='low')nutrition-=2;
+  if(d.alcohol==='over7')nutrition-=2;
+  nutrition=clamp(Math.round(nutrition*10)/10);
+
+  const total=Math.round(((aerobic+strength+recovery+mind+nutrition)/5)*10)/10;
+  return{aerobic,strength,recovery,mind,nutrition,total};
+}
+function clamp(v){return Math.min(10,Math.max(1,v))}
+
+// ── FLAGS ──
+function flags(d){
+  const f=[];
+  if(d.sleep==='under5')f.push({sev:'red',t:'שינה קריטית',desc:'פחות מ-5 שעות — עדיפות ראשונה לפני כל פרוטוקול.'});
+  if(d.stress>=8)f.push({sev:'red',t:'סטרס גבוה מאוד',desc:'Cortisol כרוני חוסם ריקברי ובניית שריר.'});
+  if(d.conditions.includes('heart'))f.push({sev:'red',t:'מחלת לב',desc:'נדרש אישור קרדיולוג לפני Zone 2+'});
+  if(d.conditions.includes('diabetes'))f.push({sev:'red',t:'סכרת',desc:'ניטור גלוקוז לפני/אחרי אימון. Zone 2 כנקודת התחלה.'});
+  if(d.alcohol==='over7')f.push({sev:'red',t:'אלכוהול גבוה',desc:'7+ כוסות — פוגם בשינה, testosterone, ו-MPS.'});
+  if(d.sleep==='5to6')f.push({sev:'amber',t:'שינה לא מספקת',desc:'5–6 שעות פוגמות בריקברי וב-muscle protein synthesis.'});
+  if(d.injuries&&d.injuries!=='none')f.push({sev:'amber',t:'פציעה — '+{knee:'ברכיים',back:'גב',shoulder:'כתפיים',multiple:'מרובות'}[d.injuries],desc:'תאם עם פיזיותרפיסט לפני פרוטוקול כוח.'});
+  if(d.symptoms.includes('brain_fog'))f.push({sev:'amber',t:'ערפל מוחי',desc:'בדוק B12, Ferritin, TSH, D3 בפנל הדם.'});
+  return f;
+}
+
+// ── PROTOCOL ──
+function protocol(d,s){
+  if(d.sleep==='under5'||d.stress>=8||s.recovery<4)
+    return{name:'Recovery First',cls:'pb-recovery',
+      why:'ריקברי '+s.recovery+'/10 — הגוף לא יסתגל לעומס עד שהבסיס ייוצב.',
+      q1:'Sleep protocol + NSDR יומי + Box Breathing',q2:'Zone 2 קל 2× + Mobility',q3:'כוח ראשון אם HRV השתפר'};
+  if(s.aerobic<5||d.run30==='no'||d.freq<=1)
+    return{name:'Foundation Cardio',cls:'pb-cardio',
+      why:'אירובי '+s.aerobic+'/10 — Zone 2 היא ה-ROI הגבוה ביותר ל-longevity.',
+      q1:'Zone 2 × 3 בשבוע, HR 130–140',q2:'Zone 2 + כוח בסיסי 2×',q3:'VO2max intervals + כוח 3×'};
+  if(s.strength<s.aerobic-2||!d.acttype.includes('weights'))
+    return{name:'Strength Build',cls:'pb-strength',
+      why:'כוח '+s.strength+'/10 — muscle mass predictor #1 לתמותה בגיל 70+.',
+      q1:'Big 5 — 3×10 @ 65%, טכניקה',q2:'4×8 @ 75% + Zone 2 × 2',q3:'5×5 @ 80% + Grip'};
+  if(s.mind<5||d.stress>=7||d.goals.includes('mental'))
+    return{name:'Neuro First',cls:'pb-neuro',
+      why:'מנטל '+s.mind+'/10 + סטרס — cortisol חוסם הכל.',
+      q1:'NSDR יומי + Breathwork + 4-7-8',q2:'Zone 2 × 3 + Wim Hof',q3:'Sauna + Cold + כוח בסיסי'};
+  return{name:'Full Integration',cls:'pb-balanced',
+    why:'ציון '+s.total+'/10 — בסיס סביר. פרוטוקול שבועי מלא.',
+    q1:'Zone 2 × 2 + כוח × 2 + NSDR',q2:'Polarized + Hypertrophy + Sauna/Cold',q3:'VO2max + Strength peak'};
+}
+
+// ── AI SUMMARY ──
+function aiSummary(d,s,p,fl){
+  const redCount=fl.filter(f=>f.sev==='red').length;
+  const top=d.goals.includes('longevity')?'אריכות חיים':d.goals.includes('energy')?'אנרגיה':d.goals.includes('body')?'הרכב גוף':'אופטימיזציה';
+  return `${d.first} בן/בת ${d.age}, ציון כולל ${s.total}/10. מטרה עיקרית: ${top}. ${redCount?redCount+' דגל/י אדום/ים דורש/ים תשומת לב לפני פרוטוקול. ':''
+  }נקודות חוזק: ${s.aerobic>=7?'אירובי טוב, ':''
+  }${s.strength>=7?'כוח סביר, ':''
+  }${s.recovery>=7?'ריקברי טוב':''}. אתגרים: ${s.recovery<5?'ריקברי נמוך — שינה/סטרס. ':''
+  }${s.aerobic<5?'בסיס אירובי חסר. ':''
+  }${s.strength<5?'כוח נמוך. ':''}. המלצת פרוטוקול: ${p.name}.`;
+}
+
+// ── SUBMIT ──
+function submit(){
+  const d=collect();
+  const s=score(d);
+  const fl=flags(d);
+  const p=protocol(d,s);
+  d.scores=s; d.flags=fl; d.protocol=p;
+  d.aiSummary=aiSummary(d,s,p,fl);
+  members.push(d);
+  save();
+  document.getElementById('vForm').classList.remove('active');
+  document.getElementById('vTy').classList.add('active');
+}
+
+function save(){localStorage.setItem('moai2_members',JSON.stringify(members))}
+
+// ── DASH ──
+function showDash(){
+  ['vForm','vTy'].forEach(v=>document.getElementById(v).classList.remove('active'));
+  document.getElementById('vDash').classList.add('active');
+  renderMembers();
+  updateGroups();
+}
+function goForm(){
+  document.getElementById('vDash').classList.remove('active');
+  document.getElementById('vForm').classList.add('active');
+  cur=1;
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s1').classList.add('active');
+  document.getElementById('pFill').style.width='14%';
+  document.querySelectorAll('.sn-row').forEach((r,i)=>{r.classList.remove('current','done');if(i===0)r.classList.add('current')});
+}
+function dTab(id,btn){
+  document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('on');
+  document.getElementById('profileView').style.display='none';
+  btn.classList.add('on');
+}
+
+// ── RENDER MEMBERS ──
+function renderMembers(){
+  document.getElementById('profileView').style.display='none';
+  document.getElementById('pMembers').querySelector('table').style.display=members.length?'table':'none';
+  document.getElementById('emptyMembers').style.display=members.length?'none':'block';
+  document.getElementById('membersCount').textContent=members.length+' חברים';
+  const body=document.getElementById('membersBody');
+  body.innerHTML='';
+  members.forEach((m,i)=>{
+    const s=m.scores;
+    const sc=s.total>=7?'sr-hi':s.total>=5?'sr-md':'sr-lo';
+    const p=m.protocol||{};
+    const reds=(m.flags||[]).filter(f=>f.sev==='red').length;
+    const ambers=(m.flags||[]).filter(f=>f.sev==='amber').length;
+    const ap=m.approvals||{};
+    const allApproved=ap.md&&ap.nutritionist&&ap.coach;
+    const tr=document.createElement('tr');
+    tr.onclick=()=>showProfile(i);
+    tr.innerHTML=`
+      <td><strong>${m.first} ${m.last}</strong><div style="font-size:11px;color:var(--muted)">${m.email}</div></td>
+      <td><span class="score-ring ${sc}">${s.total}</span></td>
+      <td><span class="proto-badge ${p.cls||'pb-balanced'}">${p.name||'—'}</span></td>
+      <td>
+        ${reds?`<span class="flag-dot fd-red" title="${reds} דגל אדום"></span>`:''}
+        ${ambers?`<span class="flag-dot fd-amber" title="${ambers} דגל כתום"></span>`:''}
+        ${!reds&&!ambers?`<span class="flag-dot fd-ok" title="נקי"></span>`:''}
+      </td>
+      <td><span class="approval-badge ${allApproved?'ab-approved':'ab-pending'}">${allApproved?'מאושר':'ממתין'}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${m.date}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+// ── RENDER PROFILE ──
+function showProfile(i){
+  document.getElementById('pMembers').querySelector('table').style.display='none';
+  document.getElementById('emptyMembers').style.display='none';
+  document.getElementById('pMembers').querySelector('.table-head').style.display='none';
+  document.getElementById('profileView').style.display='block';
+  const m=members[i]; const s=m.scores; const p=m.protocol||{};
+  const sc=s.total>=7?'sbr-hi':s.total>=5?'sbr-md':'sbr-lo';
+  const dc=v=>v>=7?'var(--teal)':v>=5?'var(--amber)':'var(--rust)';
+  const bmi=Math.round(m.weight/((m.height/100)**2)*10)/10;
+  const sleepLbl={under5:'<5h','5to6':'5–6h','6to7':'6–7h','7to8':'7–8h',over8:'8+h'};
+
+  const dimCard=(lbl,val,rows)=>`
+    <div class="dim-card">
+      <div class="dc-head"><span class="dc-name">${lbl}</span><span class="dc-val" style="color:${dc(val)}">${val}</span></div>
+      <div class="dc-bar-bg"><div class="dc-bar" style="width:${val*10}%;background:${dc(val)}"></div></div>
+      ${rows.map(r=>`<div class="dc-row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}
+    </div>`;
+
+  const flagsHtml=(m.flags||[]).map(f=>`
+    <div class="flag-row">
+      <div class="fr-dot frd-${f.sev}"></div>
+      <div><div class="fr-title">${f.t}</div><div class="fr-desc">${f.desc}</div></div>
+    </div>`).join('');
+
+  const ap=m.approvals||{};
+  document.getElementById('profileContent').innerHTML=`
+    <div class="prof-top">
+      <div>
+        <div class="prof-name serif">${m.first} ${m.last}</div>
+        <div class="prof-meta">${m.age} שנים · ${m.sex==='male'?'זכר':'נקבה'} · ${m.height}ס"מ / ${m.weight}ק"ג · BMI ${bmi}<br>${m.email} · ${m.date}</div>
+      </div>
+      <div class="score-big">
+        <div class="sb-ring ${sc} serif">${s.total}</div>
+        <div class="sb-lbl">Protocol Score</div>
+      </div>
+    </div>
+
+    <div class="dim-grid">
+      ${dimCard('אירובי',s.aerobic,[['תדירות',{0:'לא מתאמן',1:'1–2×',3:'3×',4:'4–5×',6:'6+×'}[m.freq]||m.freq+'×'],['ריצה 30\'',{yes:'כן',maybe:'בקושי',no:'לא'}[m.run30]||'—']])}
+      ${dimCard('כוח',s.strength,[['כוח',m.acttype.includes('weights')?'כן':'לא'],['חלבון',{low:'נמוך',mid:'בינוני',high:'גבוה',unknown:'?'}[m.protein]||'—'],['פציעות',{none:'ללא',knee:'ברכיים',back:'גב',shoulder:'כתפיים',multiple:'מרובות'}[m.injuries]||'—']])}
+      ${dimCard('ריקברי',s.recovery,[['שינה',sleepLbl[m.sleep]||'—'],['איכות',m.sleepq+'/10'],['אלכוהול',{none:'ללא','1to3':'1–3','4to7':'4–7',over7:'7+'}[m.alcohol]||'—']])}
+      ${dimCard('מנטל',s.mind,[['סטרס',m.stress+'/10'],['מיינד',{daily:'יומי',sometimes:'לפעמים',no:'לא',want:'מתחיל'}[m.mind]||'—']])}
+      ${dimCard('תזונה',s.nutrition,[['חלבון',{low:'נמוך',mid:'בינוני',high:'גבוה',unknown:'?'}[m.protein]||'—'],['אלכוהול',{none:'ללא','1to3':'1–3','4to7':'4–7',over7:'7+'}[m.alcohol]||'—']])}
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-label">AI Summary — לאישור צוות מקצועי</div>
+      <div class="ai-proto serif">${p.name||'—'}</div>
+      <div class="ai-text">${m.aiSummary||''}</div>
+      <div class="approval-row">
+        ${ap.md?`<span class="approved-chip">רופא ✓</span>`:`<button class="appr-btn appr-md" onclick="approve(${i},'md')">אשר — רופא</button>`}
+        ${ap.nutritionist?`<span class="approved-chip">תזונאי ✓</span>`:`<button class="appr-btn appr-nut" onclick="approve(${i},'nutritionist')">אשר — תזונאי</button>`}
+        ${ap.coach?`<span class="approved-chip">מאמן ✓</span>`:`<button class="appr-btn appr-coach" onclick="approve(${i},'coach')">אשר — מאמן</button>`}
+      </div>
+    </div>
+
+    ${flagsHtml?`<div class="sec-card"><div class="sc-lbl">דגלים קליניים</div>${flagsHtml}</div>`:''}
+
+    <div class="sec-card">
+      <div class="sc-lbl">פרוטוקול מומלץ — 3 חודשים</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;margin-bottom:6px">${p.name||'—'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${p.why||''}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:7px">
+        <div style="background:var(--s2);padding:9px 11px;border-radius:var(--r)"><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">חודש 1</div><div style="font-size:11px">${p.q1||''}</div></div>
+        <div style="background:var(--s2);padding:9px 11px;border-radius:var(--r)"><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">חודש 2</div><div style="font-size:11px">${p.q2||''}</div></div>
+        <div style="background:var(--s2);padding:9px 11px;border-radius:var(--r)"><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">חודש 3</div><div style="font-size:11px">${p.q3||''}</div></div>
+      </div>
+    </div>
+
+    ${m.meds||m.notes?`<div class="sec-card"><div class="sc-lbl">הערות</div>
+      ${m.meds?`<div style="font-size:12px;margin-bottom:6px"><strong>תרופות:</strong> <span style="color:var(--muted)">${m.meds}</span></div>`:''}
+      ${m.notes?`<div style="font-size:12px"><strong>הערות כלליות:</strong> <span style="color:var(--muted)">${m.notes}</span></div>`:''}
+    </div>`:''}`;
+}
+
+function approve(idx,role){
+  members[idx].approvals=members[idx].approvals||{};
+  members[idx].approvals[role]=true;
+  save();
+  showProfile(idx);
+}
+
+function backToList(){
+  document.getElementById('profileView').style.display='none';
+  document.getElementById('pMembers').querySelector('table').style.display=members.length?'table':'none';
+  document.getElementById('emptyMembers').style.display=members.length?'none':'block';
+  document.getElementById('pMembers').querySelector('.table-head').style.display='flex';
+}
+
+// ── GROUPS ──
+function updateGroups(){
+  const g1=members.filter((_,i)=>i%2===0).map(m=>`<span class="gc-mem">${m.first}</span>`).join('')||'<span class="gc-mem">ממתין...</span>';
+  const g2=members.filter((_,i)=>i%2===1).map(m=>`<span class="gc-mem">${m.first}</span>`).join('')||'<span class="gc-mem">ממתין...</span>';
+  document.getElementById('grp1members').innerHTML=g1;
+  document.getElementById('grp2members').innerHTML=g2;
+}
+
+// ── DEMO ──
+function loadDemo(){
+  const d={id:1,date:'23/4/2026',first:'אמיר',last:'כהן',age:36,sex:'male',height:179,weight:80,email:'amir@moai.co',
+    conditions:['none'],meds:'אין',injuries:'back',freq:3,acttype:['cardio','classes'],run30:'maybe',
+    sleep:'6to7',sleepq:5,tired:'often',stress:7,symptoms:['brain_fog'],mind:'no',
+    protein:'low',alcohol:'1to3',diet:'',goals:['longevity','energy','community'],time:'60',notes:'עובד שעות ארוכות',
+    approvals:{md:false,nutritionist:false,coach:false}};
+  d.scores=score(d); d.flags=flags(d); d.protocol=protocol(d,d.scores);
+  d.aiSummary=aiSummary(d,d.scores,d.protocol,d.flags);
+  members=[d]; save();
+}
+</script>
+</body>
+</html>
